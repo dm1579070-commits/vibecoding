@@ -1,0 +1,1006 @@
+<!--
+  Хроники Python — учебная песочница в стиле древней мифологии
+  ------------------------------------------------------------
+  Цель файла: интерактивный мини-курс по Python, оформленный как
+  древний свиток знаний. Метафора: ученик проходит путь героя,
+  открывая тайны языка через свитки, заклинания и испытания оракула.
+
+  ⚠️  Оговорки:
+  1. Это учебная песочница. Код выполняется через упрощённый
+     транслятор Python→JS и eval(). НЕ для продакшена.
+  2. Настоящая проверка требует сервера и изолированного рантайма.
+  3. Для реальных проектов используйте Replit, Colab, локальный Python.
+  4. В будущем такие модули выносятся в API и микросервисы.
+-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Хроники Python — Путь Посвящённого</title>
+<style>
+  :root {
+    --parchment: #e8d9b8;
+    --parchment-dark: #d4c097;
+    --parchment-deep: #b8a079;
+    --ink: #2a1810;
+    --ink-soft: #4a3525;
+    --gold: #c9a961;
+    --gold-bright: #e5c77a;
+    --gold-dark: #8b6f3d;
+    --crimson: #8b2e2e;
+    --crimson-soft: #a84545;
+    --bronze: #6b4423;
+    --shadow: rgba(42, 24, 16, 0.25);
+    --shadow-deep: rgba(42, 24, 16, 0.5);
+    --radius: 4px;
+    --transition: 0.4s ease;
+    --font-serif: Georgia, "Times New Roman", "Palatino Linotype", serif;
+    --font-mono: "Courier New", Consolas, monospace;
+  }
+  [data-theme="night"] {
+    --parchment: #1a1410;
+    --parchment-dark: #241a14;
+    --parchment-deep: #2e2218;
+    --ink: #e8d9b8;
+    --ink-soft: #c9b890;
+    --gold: #d4b574;
+    --gold-bright: #f0d48a;
+    --gold-dark: #8b6f3d;
+    --crimson: #c05050;
+    --crimson-soft: #d86868;
+    --bronze: #8b5a2b;
+    --shadow: rgba(0, 0, 0, 0.6);
+    --shadow-deep: rgba(0, 0, 0, 0.85);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: var(--font-serif);
+    color: var(--ink);
+    min-height: 100vh;
+    background:
+      radial-gradient(ellipse at top, var(--parchment-dark) 0%, transparent 60%),
+      radial-gradient(ellipse at bottom, var(--parchment-deep) 0%, transparent 60%),
+      repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(139, 111, 61, 0.03) 2px, rgba(139, 111, 61, 0.03) 4px),
+      var(--parchment);
+    background-attachment: fixed;
+    line-height: 1.7;
+    transition: background var(--transition), color var(--transition);
+  }
+  [data-theme="night"] body {
+    background:
+      radial-gradient(ellipse at top, #2a1f15 0%, transparent 60%),
+      radial-gradient(ellipse at bottom, #1a1008 0%, transparent 60%),
+      var(--parchment);
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ====== ШАПКА ====== */
+  header {
+    text-align: center;
+    padding: 40px 20px 30px;
+    position: relative;
+    border-bottom: 2px double var(--gold-dark);
+    margin-bottom: 32px;
+  }
+  header::before, header::after {
+    content: "❖";
+    position: absolute;
+    bottom: -14px;
+    color: var(--gold);
+    font-size: 1.2rem;
+    background: var(--parchment);
+    padding: 0 12px;
+  }
+  header::before { left: 30%; }
+  header::after { right: 30%; }
+  .logo {
+    font-size: 2.4rem;
+    font-weight: normal;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    color: var(--ink);
+    font-variant: small-caps;
+    text-shadow: 1px 1px 0 var(--gold-dark);
+    margin-bottom: 8px;
+  }
+  .logo .accent { color: var(--crimson); }
+  .tagline {
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1rem;
+    letter-spacing: 2px;
+  }
+  .theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: 1px solid var(--gold-dark);
+    color: var(--gold);
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all var(--transition);
+  }
+  .theme-toggle:hover {
+    background: var(--gold-dark);
+    color: var(--parchment);
+    transform: rotate(180deg);
+  }
+
+  /* ====== ПРОГРЕСС ====== */
+  .progress-card {
+    background: linear-gradient(180deg, var(--parchment-dark) 0%, var(--parchment) 100%);
+    border: 1px solid var(--gold-dark);
+    border-radius: var(--radius);
+    padding: 20px 24px;
+    margin-bottom: 32px;
+    box-shadow: 0 4px 16px var(--shadow), inset 0 1px 0 rgba(255,255,255,0.2);
+    position: relative;
+  }
+  .progress-card::before {
+    content: "⚜ ПУТЬ ПОСВЯЩЁННОГО ⚜";
+    position: absolute;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--parchment);
+    padding: 0 16px;
+    font-size: 0.75rem;
+    letter-spacing: 3px;
+    color: var(--gold-dark);
+    font-variant: small-caps;
+  }
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+  }
+  .progress-label {
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .progress-status {
+    color: var(--crimson);
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+  .progress-bar {
+    height: 14px;
+    background: var(--parchment-deep);
+    border: 1px solid var(--gold-dark);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: inset 0 2px 4px var(--shadow);
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--crimson) 0%, var(--gold) 50%, var(--gold-bright) 100%);
+    width: 0%;
+    transition: width 0.6s ease;
+    border-radius: 1px;
+    position: relative;
+    box-shadow: 0 0 8px rgba(201, 169, 97, 0.5);
+  }
+  .progress-fill::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      transparent 0,
+      transparent 4px,
+      rgba(255,255,255,0.15) 4px,
+      rgba(255,255,255,0.15) 8px
+    );
+  }
+
+  /* ====== РАСКЛАДКА ====== */
+  .layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    gap: 28px;
+  }
+  @media (max-width: 780px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  /* ====== БОКОВОЙ СПИСОК ====== */
+  .sidebar {
+    background: linear-gradient(180deg, var(--parchment-dark) 0%, var(--parchment) 100%);
+    border: 1px solid var(--gold-dark);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: 0 4px 12px var(--shadow);
+    height: fit-content;
+    position: relative;
+  }
+  .sidebar::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border: 1px solid var(--gold-dark);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0.4;
+  }
+  .sidebar-title {
+    text-align: center;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--crimson);
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--gold-dark);
+    font-variant: small-caps;
+  }
+  .module-item {
+    padding: 12px 14px;
+    border-radius: 2px;
+    cursor: pointer;
+    font-size: 0.92rem;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    transition: all var(--transition);
+    color: var(--ink);
+    border-left: 3px solid transparent;
+    line-height: 1.4;
+  }
+  .module-item:hover {
+    background: var(--parchment-dark);
+    border-left-color: var(--gold);
+  }
+  .module-item.active {
+    background: var(--parchment-deep);
+    border-left-color: var(--crimson);
+    color: var(--crimson);
+    font-weight: bold;
+    box-shadow: inset 0 0 0 1px var(--gold-dark);
+  }
+  .module-item.done .status-dot {
+    background: var(--gold);
+    box-shadow: 0 0 6px var(--gold-bright);
+  }
+  .module-item.done .status-dot::after {
+    content: "✓";
+    color: var(--ink);
+    font-size: 0.6rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  .status-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    background: var(--parchment-deep);
+    border: 1px solid var(--gold-dark);
+    flex-shrink: 0;
+    margin-top: 4px;
+    transition: all var(--transition);
+    position: relative;
+  }
+  .module-label {
+    font-size: 0.7rem;
+    color: var(--gold-dark);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+    font-variant: small-caps;
+  }
+
+  /* ====== ОСНОВНОЙ КОНТЕНТ ====== */
+  .main {
+    background: linear-gradient(180deg, var(--parchment) 0%, var(--parchment-dark) 100%);
+    border: 1px solid var(--gold-dark);
+    border-radius: var(--radius);
+    padding: 36px 40px;
+    box-shadow: 0 6px 20px var(--shadow);
+    position: relative;
+  }
+  .main::before, .main::after {
+    content: "";
+    position: absolute;
+    width: 30px; height: 30px;
+    border: 2px solid var(--gold);
+    opacity: 0.6;
+  }
+  .main::before {
+    top: 10px; left: 10px;
+    border-right: none; border-bottom: none;
+  }
+  .main::after {
+    bottom: 10px; right: 10px;
+    border-left: none; border-top: none;
+  }
+  @media (max-width: 600px) {
+    .main { padding: 28px 20px; }
+  }
+  .scroll-badge {
+    display: inline-block;
+    background: var(--crimson);
+    color: var(--parchment);
+    padding: 4px 14px;
+    border-radius: 2px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-variant: small-caps;
+    box-shadow: 0 2px 4px var(--shadow);
+  }
+  .main h1 {
+    font-size: 1.9rem;
+    margin-bottom: 18px;
+    color: var(--ink);
+    font-weight: normal;
+    letter-spacing: 1px;
+    border-bottom: 1px solid var(--gold-dark);
+    padding-bottom: 14px;
+    position: relative;
+  }
+  .main h1::after {
+    content: "✦";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--parchment);
+    padding: 0 10px;
+    color: var(--gold);
+  }
+  .epigraph {
+    font-style: italic;
+    color: var(--ink-soft);
+    text-align: center;
+    padding: 14px 20px;
+    margin: 18px 0;
+    border-top: 1px solid var(--gold-dark);
+    border-bottom: 1px solid var(--gold-dark);
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+  }
+  .epigraph::before { content: "❝ "; color: var(--gold); }
+  .epigraph::after { content: " ❞"; color: var(--gold); }
+  .theory {
+    color: var(--ink);
+    margin: 20px 0;
+    font-size: 1rem;
+    text-align: justify;
+    text-indent: 2em;
+  }
+  .theory:first-letter {
+    font-size: 2.2em;
+    float: left;
+    line-height: 1;
+    padding-right: 6px;
+    color: var(--crimson);
+    font-weight: bold;
+  }
+  .example {
+    background: var(--ink);
+    color: var(--parchment);
+    padding: 16px 22px;
+    border-radius: 2px;
+    font-family: var(--font-mono);
+    font-size: 0.9rem;
+    margin: 20px 0;
+    border-left: 4px solid var(--gold);
+    border-right: 4px solid var(--gold);
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.4);
+    overflow-x: auto;
+    position: relative;
+  }
+  .example::before {
+    content: "📜 ОБРАЗЕЦ ПИСЬМА";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    background: var(--ink);
+    color: var(--gold);
+    padding: 0 10px;
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    font-family: var(--font-serif);
+  }
+  .task-box {
+    background: linear-gradient(135deg, var(--parchment-dark) 0%, var(--parchment) 100%);
+    border: 2px solid var(--crimson);
+    border-radius: 2px;
+    padding: 20px 24px;
+    margin: 24px 0;
+    position: relative;
+    box-shadow: 0 4px 12px var(--shadow);
+  }
+  .task-box::before {
+    content: "⚔";
+    position: absolute;
+    top: -14px;
+    left: 20px;
+    background: var(--parchment);
+    color: var(--crimson);
+    padding: 0 10px;
+    font-size: 1.2rem;
+  }
+  .task-box h3 {
+    color: var(--crimson);
+    font-size: 1rem;
+    margin-bottom: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-variant: small-caps;
+    font-weight: normal;
+  }
+  .task-box p { font-size: 0.95rem; }
+  .ai-insight {
+    background: linear-gradient(135deg, rgba(201, 169, 97, 0.15), rgba(139, 46, 46, 0.08));
+    border: 1px dashed var(--gold-dark);
+    border-radius: 2px;
+    padding: 14px 20px;
+    margin: 20px 0;
+    font-size: 0.9rem;
+    font-style: italic;
+    color: var(--ink-soft);
+  }
+  .ai-insight strong {
+    color: var(--crimson);
+    font-style: normal;
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 4px;
+    font-variant: small-caps;
+    font-size: 0.85rem;
+  }
+
+  /* ====== РЕДАКТОР ====== */
+  .editor-wrap { margin-top: 28px; }
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  .editor-label {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-variant: small-caps;
+  }
+  textarea#code {
+    width: 100%;
+    min-height: 170px;
+    background: var(--ink);
+    color: var(--parchment);
+    border: 2px solid var(--gold-dark);
+    border-radius: 2px;
+    padding: 16px 18px;
+    font-family: var(--font-mono);
+    font-size: 0.92rem;
+    line-height: 1.6;
+    resize: vertical;
+    outline: none;
+    transition: border-color var(--transition), box-shadow var(--transition);
+    tab-size: 4;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+  }
+  textarea#code:focus {
+    border-color: var(--gold);
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3), 0 0 0 3px rgba(201, 169, 97, 0.2);
+  }
+  .hint {
+    font-size: 0.85rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    font-style: italic;
+    padding-left: 18px;
+    border-left: 2px solid var(--gold-dark);
+  }
+  .actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+  button.btn {
+    background: linear-gradient(180deg, var(--crimson-soft) 0%, var(--crimson) 100%);
+    color: var(--parchment);
+    border: 1px solid var(--gold-dark);
+    padding: 11px 24px;
+    border-radius: 2px;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all var(--transition);
+    font-family: var(--font-serif);
+    font-variant: small-caps;
+    box-shadow: 0 3px 0 var(--gold-dark), 0 4px 8px var(--shadow);
+  }
+  button.btn:hover {
+    background: linear-gradient(180deg, var(--gold) 0%, var(--gold-dark) 100%);
+    color: var(--ink);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 0 var(--gold-dark), 0 6px 12px var(--shadow);
+  }
+  button.btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 1px 0 var(--gold-dark);
+  }
+  button.btn.secondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--gold-dark);
+    box-shadow: none;
+  }
+  button.btn.secondary:hover {
+    background: var(--parchment-dark);
+    color: var(--ink);
+  }
+  .output-label {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin: 20px 0 8px;
+    font-variant: small-caps;
+  }
+  .output {
+    background: var(--ink);
+    color: var(--parchment);
+    border: 1px solid var(--gold-dark);
+    border-radius: 2px;
+    padding: 16px 18px;
+    font-family: var(--font-mono);
+    font-size: 0.88rem;
+    min-height: 60px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    box-shadow: inset 0 2px 8px rgba(0,0,0,0.3);
+  }
+  .verdict {
+    margin-top: 16px;
+    padding: 14px 20px;
+    border-radius: 2px;
+    font-size: 0.95rem;
+    font-weight: bold;
+    display: none;
+    letter-spacing: 0.5px;
+    border-left: 4px solid;
+  }
+  .verdict.show { display: block; }
+  .verdict.success {
+    background: rgba(201, 169, 97, 0.15);
+    border-color: var(--gold);
+    color: var(--gold-dark);
+  }
+  .verdict.error {
+    background: rgba(139, 46, 46, 0.12);
+    border-color: var(--crimson);
+    color: var(--crimson);
+  }
+
+  /* ====== ФИНАЛЬНЫЙ БЛОК ====== */
+  .final-section {
+    margin-top: 48px;
+    background: linear-gradient(180deg, var(--parchment-dark) 0%, var(--parchment) 100%);
+    border: 2px solid var(--gold-dark);
+    border-radius: var(--radius);
+    padding: 36px 40px;
+    box-shadow: 0 6px 20px var(--shadow);
+    position: relative;
+  }
+  .final-section::before, .final-section::after {
+    content: "";
+    position: absolute;
+    width: 40px; height: 40px;
+    border: 2px solid var(--crimson);
+    opacity: 0.7;
+  }
+  .final-section::before {
+    top: 12px; left: 12px;
+    border-right: none; border-bottom: none;
+  }
+  .final-section::after {
+    bottom: 12px; right: 12px;
+    border-left: none; border-top: none;
+  }
+  .final-section h2 {
+    color: var(--crimson);
+    text-align: center;
+    margin-bottom: 8px;
+    font-size: 1.5rem;
+    letter-spacing: 3px;
+    font-variant: small-caps;
+    font-weight: normal;
+  }
+  .final-section .subtitle {
+    text-align: center;
+    color: var(--gold-dark);
+    font-style: italic;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+  }
+  .final-section ul {
+    list-style: none;
+    padding: 0;
+  }
+  .final-section li {
+    padding: 14px 0 14px 36px;
+    position: relative;
+    border-bottom: 1px dashed var(--gold-dark);
+    font-size: 0.95rem;
+    line-height: 1.6;
+  }
+  .final-section li:last-child { border-bottom: none; }
+  .final-section li::before {
+    content: "⚜";
+    position: absolute;
+    left: 8px;
+    top: 14px;
+    color: var(--crimson);
+    font-size: 1rem;
+  }
+  .final-section li strong {
+    color: var(--crimson);
+    font-variant: small-caps;
+    letter-spacing: 1px;
+  }
+
+  /* ====== ПОДВАЛ ====== */
+  footer {
+    text-align: center;
+    margin-top: 48px;
+    padding: 20px;
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    font-style: italic;
+    letter-spacing: 2px;
+    border-top: 1px solid var(--gold-dark);
+    font-variant: small-caps;
+  }
+  footer::before {
+    content: "— ✦ —";
+    display: block;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 8px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1 class="logo">Хроники <span class="accent">Python</span></h1>
+    <div class="tagline">— Путь Посвящённого в тайны языка змееподобного —</div>
+    <button class="theme-toggle" id="themeToggle" title="Сменить время суток">☀</button>
+  </header>
+
+  <div class="progress-card">
+    <div class="progress-header">
+      <span class="progress-label">Испытаний пройдено:</span>
+      <span class="progress-status" id="progressStatus">0% (0/5 свитков)</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="sidebar-title">Свитки Знаний</div>
+      <div id="moduleList"></div>
+    </aside>
+
+    <main class="main" id="main"></main>
+  </div>
+
+  <section class="final-section">
+    <h2>Путь Героя</h2>
+    <div class="subtitle">— ЧтоAwaitет тебя за пределами свитков —</div>
+    <ul>
+      <li><strong>Воздвигни храм FastAPI</strong> — обёрни свою логику в священный API, дабы любой странник мог к нему обратиться.</li>
+      <li><strong>Призови дух модели</strong> через HTTP-молитву (OpenAI, Hugging Face, локальная Ollama) и верни её ответ в мир mortal'ов.</li>
+      <li><strong>Собери цепь пайплайна</strong>: ввод странника → очищение данных → оракул-модель → облагораживание ответа → вывод. В этом и есть суть AI-ремесла.</li>
+      <li><strong>Раздели храм на микросервисы</strong> и свяжи их через очереди (Redis/RabbitMQ) — таково устройство настоящих продакшн-царств.</li>
+    </ul>
+  </section>
+
+  <footer>Хроники Python · учебный гримуар · для быстрых опытов и познания</footer>
+</div>
+
+<script>
+/* ============================================================
+   Хроники Python — движок песочницы
+   ⚠️  Упрощённый транслятор Python→JS + eval. Только для обучения.
+   ============================================================ */
+
+const modules = [
+  {
+    label: "Свиток I",
+    title: "Имена и Гласы",
+    epigraph: "Наречь вещь именем — значит призвать её к существованию.",
+    theory: "Переменные — это именованные сосуды, в которых хранится суть данных. В будущих интеграциях с ИИ они станут входами и выходами твоих пайплайнов: промпт — на вход, ответ оракула-модели — на выход.",
+    example: 'city = "Афины"\nprint("Я живу в", city)',
+    task: 'Создай переменную city с названием любого города и выведи фразу, содержащую "Я живу в" и имя города.',
+    hint: 'Подсказка: используй print() и запятую для соединения строк, либо f-строки.',
+    aiInsight: "Переменная — это контракт между твоим кодом и моделью: имя поля, его тип, его значение. Без этого договора интеграция невозможна.",
+    starter: '# Назови свой город и возвести о нём\n',
+    check: (out) => out.includes("Я живу в") && out.trim().length > "Я живу в".length
+  },
+  {
+    label: "Свиток II",
+    title: "Ветви Судьбы",
+    epigraph: "Три мойры прядут нить: одна даёт, другая отнимает, третья решает.",
+    theory: "Условия — это логика выбора пути. В пайплайнах ИИ они встречаются на каждом шагу: «если уверенность оракула > 0.8 — яви ответ, иначе — запроси уточнение у странника».",
+    example: 'score = 70\nif score >= 50:\n    print("Допуск есть")\nelse:\n    print("Нужно добрать баллы")',
+    task: 'Создай переменную score = 70. Если score >= 50, выведи "Допуск есть", иначе — "Нужно добрать баллы".',
+    hint: 'Подсказка: структура if/else и отступы в Python священны.',
+    aiInsight: "Условие — это развилка в пайплайне: маршрутизация запросов, фильтрация ответов, выбор модели по сложности задачи.",
+    starter: 'score = 70\n# Испытай число и изреки приговор\n',
+    check: (out) => out.includes("Допуск есть") || out.includes("Нужно добрать баллы")
+  },
+  {
+    label: "Свиток III",
+    title: "Круги Вечности",
+    epigraph: "Всё возвращается на круги своя — и числа, и судьбы, и звёзды.",
+    theory: "Циклы — это обработка пакетов данных. Работая с ИИ, ты будешь прогонять через модель списки изображений, текстов, голосов — и без циклов здесь не обойтись.",
+    example: 'for i in range(1, 5):\n    print(i)',
+    task: 'Выведи квадраты чисел от 1 до 4 включительно, каждый на новой строке: 1, 4, 9, 16.',
+    hint: 'Подсказка: используй range(1, 5) и оператор возведения в степень **.',
+    aiInsight: "Пакетная обработка (batching) — основа производительности AI-сервисов: один круг — и модель отвечает сразу N странникам.",
+    starter: '# Соверши круг возведений в степень\n',
+    check: (out) => /(^|\n)1\n4\n9\n16(\n|$)/.test(out.trim())
+  },
+  {
+    label: "Свиток IV",
+    title: "Заклинания",
+    epigraph: "Заклинание, произнесённое однажды, действует вовеки, стоит лишь назвать его имя.",
+    theory: "Функции — это микросервисы в миниатюре: изолированный блок кода с чётким входом и выходом. Именно из функций собирают интеграционные решения и AI-пайплайны.",
+    example: 'def greet(name):\n    return "Привет, " + name\n\nprint(greet("Одиссей"))',
+    task: 'Напиши функцию square(n), возвращающую квадрат числа. Выведи результат square(7) — должно получиться 49.',
+    hint: 'Подсказка: def square(n): return n ** 2',
+    aiInsight: "Функция = API-эндпоинт в миниатюре. Аргументы — параметры запроса, return — тело ответа. Так мыслят архитекторы интеграций.",
+    starter: '# Изреки заклинание square и призови его для числа 7\n',
+    check: (out) => out.includes("49")
+  },
+  {
+    label: "Свиток V",
+    title: "Испытание Оракула",
+    epigraph: "Оракул не ошибается — он лишь говорит правду в меру твоих заслуг.",
+    theory: "Мини-проекты — это быстрые прототипы, в которых логика встречается с интерфейсом. Именно так рождаются первые AI-продукты: от заклинания до живого существа.",
+    example: 'score = 85\nif score >= 90:\n    print("Отлично")\nelif score >= 70:\n    print("Хорошо")\nelse:\n    print("Нужно постараться")',
+    task: 'Создай переменную score = 85. Выведи "Отлично" (≥90), "Хорошо" (≥70 и <90) или "Нужно постараться" (меньше).',
+    hint: 'Подсказка: используй if/elif/else с верными условиями.',
+    aiInsight: "Это готовый модуль AI-фидбека: оценка ответа модели, калибровка уверенности, маршрутизация эскалаций.",
+    starter: 'score = 85\n# Испытай оракула и изреки вердикт\n',
+    check: (out) => out.includes("Отлично") || out.includes("Хорошо") || out.includes("Нужно постараться")
+  }
+];
+
+let currentModule = 0;
+let completed = JSON.parse(localStorage.getItem('chronicles_completed') || '[]');
+
+// ====== Транслятор Python → JS (упрощённый) ======
+function pyToJs(code) {
+  let js = code.replace(/\r\n/g, '\n');
+  js = js.replace(/\bprint\s*\(/g, '__print__(');
+  js = js.replace(/\bTrue\b/g, 'true');
+  js = js.replace(/\bFalse\b/g, 'false');
+  js = js.replace(/\bNone\b/g, 'null');
+  js = js.replace(/\band\b/g, '&&');
+  js = js.replace(/\bor\b/g, '||');
+  js = js.replace(/\bnot\b/g, '!');
+  js = js.replace(/\brange\s*\(([^,]+),\s*([^)]+)\)/g, '__range__($1, $2)');
+  js = js.replace(/\brange\s*\(([^)]+)\)/g, '__range__(0, $1)');
+  js = indentToBlocks(js);
+  return js;
+}
+
+function indentToBlocks(code) {
+  const lines = code.split('\n');
+  const result = [];
+  const stack = [];
+  for (let line of lines) {
+    if (line.trim() === '' || line.trim().startsWith('#')) {
+      result.push(line);
+      continue;
+    }
+    const indent = line.match(/^(\s*)/)[1].length;
+    while (stack.length > 0 && indent <= stack[stack.length - 1]) {
+      stack.pop();
+      result.push('}');
+    }
+    const trimmed = line.trim();
+    const opensBlock = /^(if|elif|else|for|while|def)\b/.test(trimmed);
+    if (opensBlock) {
+      let converted = trimmed;
+      converted = converted.replace(/^elif\b/, 'else if');
+      converted = converted.replace(/^else\s*:/, 'else {');
+      converted = converted.replace(/:\s*$/, ' {');
+      if (!converted.endsWith('{')) converted += ' {';
+      result.push(' '.repeat(indent) + converted);
+      stack.push(indent);
+    } else {
+      let converted = trimmed.replace(/:\s*$/, ';');
+      if (!converted.endsWith(';') && !converted.endsWith('{')) converted += ';';
+      result.push(' '.repeat(indent) + converted);
+    }
+  }
+  while (stack.length > 0) {
+    stack.pop();
+    result.push('}');
+  }
+  return result.join('\n');
+}
+
+function __range__(a, b) {
+  const arr = [];
+  for (let i = a; i < b; i++) arr.push(i);
+  return arr;
+}
+
+function runCode(code) {
+  const output = [];
+  const __print__ = (...args) => {
+    output.push(args.map(a => {
+      if (Array.isArray(a)) return '[' + a.join(', ') + ']';
+      return String(a);
+    }).join(' '));
+  };
+  try {
+    const js = pyToJs(code);
+    const fn = new Function('__print__', '__range__', js);
+    fn(__print__, __range__);
+    return { ok: true, out: output.join('\n') };
+  } catch (e) {
+    return { ok: false, out: '⚠ Ошибка исполнения: ' + e.message };
+  }
+}
+
+// ====== Рендеринг ======
+function renderSidebar() {
+  const list = document.getElementById('moduleList');
+  list.innerHTML = modules.map((m, i) => `
+    <div class="module-item ${i === currentModule ? 'active' : ''} ${completed.includes(i) ? 'done' : ''}"
+         onclick="selectModule(${i})">
+      <span class="status-dot"></span>
+      <div>
+        <span class="module-label">${m.label}</span>
+        <span>${m.title}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderMain() {
+  const m = modules[currentModule];
+  const main = document.getElementById('main');
+  main.innerHTML = `
+    <span class="scroll-badge">${m.label}</span>
+    <h1>${m.title}</h1>
+    <div class="epigraph">${m.epigraph}</div>
+    <p class="theory">${m.theory}</p>
+    <div class="example">${escapeHtml(m.example)}</div>
+    <div class="task-box">
+      <h3>Испытание</h3>
+      <p>${m.task}</p>
+    </div>
+    <div class="ai-insight">
+      <strong>✦ Связь с интеграцией ИИ:</strong>
+      ${m.aiInsight}
+    </div>
+    <div class="editor-wrap">
+      <div class="editor-header">
+        <span class="editor-label">Твой свиток</span>
+      </div>
+      <textarea id="code" spellcheck="false">${escapeHtml(m.starter)}</textarea>
+      <div class="hint">${m.hint}</div>
+      <div class="actions">
+        <button class="btn" onclick="handleRun()">⚔ Испытать</button>
+        <button class="btn secondary" onclick="handleReset()">↺ Очистить свиток</button>
+      </div>
+      <div class="output-label">Глас оракула</div>
+      <div class="output" id="output">Здесь явится ответ...</div>
+      <div class="verdict" id="verdict"></div>
+    </div>
+  `;
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function updateProgress() {
+  const done = completed.length;
+  const total = modules.length;
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('progressStatus').textContent =
+    `${pct}% (${done}/${total} свитков)`;
+}
+
+function selectModule(i) {
+  currentModule = i;
+  renderSidebar();
+  renderMain();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function handleRun() {
+  const code = document.getElementById('code').value;
+  const outEl = document.getElementById('output');
+  const verdict = document.getElementById('verdict');
+  const result = runCode(code);
+  outEl.textContent = result.out || '(свиток пуст)';
+
+  if (!result.ok) {
+    verdict.className = 'verdict show error';
+    verdict.innerHTML = '✗ Заклинание не удалось. Проверь синтаксис и священные отступы.';
+    return;
+  }
+  const m = modules[currentModule];
+  const passed = m.check(result.out);
+  if (passed) {
+    verdict.className = 'verdict show success';
+    verdict.innerHTML = '✦ Истина изречена! Испытание пройдено. Ступай к следующему свитку.';
+    if (!completed.includes(currentModule)) {
+      completed.push(currentModule);
+      localStorage.setItem('chronicles_completed', JSON.stringify(completed));
+      updateProgress();
+      renderSidebar();
+    }
+  } else {
+    verdict.className = 'verdict show error';
+    verdict.innerHTML = '✗ Оракул молчит. Проверь, что глас в точности совпадает с требуемым.';
+  }
+}
+
+function handleReset() {
+  const m = modules[currentModule];
+  document.getElementById('code').value = m.starter;
+  document.getElementById('output').textContent = 'Здесь явится ответ...';
+  document.getElementById('verdict').className = 'verdict';
+}
+
+// ====== Тема (день/ночь) ======
+function initTheme() {
+  const saved = localStorage.getItem('chronicles_theme') || 'day';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved === 'night' ? '☀' : '☾';
+}
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur === 'night' ? 'day' : 'night';
+  document.documentElement.setAttribute('data-theme', next);
+  document.getElementById('themeToggle').textContent = next === 'night' ? '☀' : '☾';
+  localStorage.setItem('chronicles_theme', next);
+});
+
+// ====== Старт ======
+initTheme();
+renderSidebar();
+renderMain();
+updateProgress();
+</script>
+</body>
+</html>

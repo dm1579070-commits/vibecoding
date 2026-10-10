@@ -1,0 +1,416 @@
+<!--
+  Цель файла: аниме‑стилизованный мини‑курс по Python (аналог FreeCodeCamp) в одном index.html.
+  Это учебная песочница: демонстрация связки UI + логика + визуальные эффекты.
+  
+  ОГРАНИЧЕНИЯ И ОГОВОРКИ:
+  - Используется eval() для запуска кода — только для обучения, не для продакшена.
+  - Настоящая проверка кода требует серверных тестов; здесь — упрощённая логика через перехват вывода.
+  - Для реального прототипирования лучше использовать Replit, Google Colab или локальный Python.
+  - Анимации и стили — ради атмосферы; не влияют на проверку заданий.
+-->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <title>Anime Python Course</title>
+  <style>
+    :root {
+      --bg-main: #1a1220;
+      --bg-card: #2a1f35;
+      --text-main: #e0e0ff;
+      --text-muted: #aaa;
+      --accent-blue: #6fa8ff;
+      --accent-orange: #ff9a4a;
+      --border: #3a2a45;
+      --shadow: 0 4px 16px rgba(0,0,0,0.4);
+    }
+
+    [data-theme="light"] {
+      --bg-main: #f0f4f8;
+      --bg-card: #ffffff;
+      --text-main: #222;
+      --text-muted: #666;
+      --accent-blue: #2c5aa0;
+      --accent-orange: #d66a33;
+      --border: #ccc;
+      --shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-main);
+      color: var(--text-main);
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    /* Декоративные элементы */
+    .decor-layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .cat {
+      position: absolute;
+      width: 80px;
+      height: 60px;
+      background: radial-gradient(circle at 30% 30%, #ffd0a0, #e6a86e, #a05e33);
+      border-radius: 50% 50% 40% 40%;
+      filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+      animation: float 6s ease-in-out infinite;
+    }
+    .cat::after {
+      content: '';
+      position: absolute;
+      bottom: -20px;
+      right: -35px;
+      width: 70px;
+      height: 12px;
+      background: #a05e33;
+      border-radius: 0 50px 50px 0;
+      transform-origin: left center;
+      animation: tailWag 1.2s ease-in-out infinite alternate;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) translateX(0); }
+      25% { transform: translateY(-20px) translateX(15px); }
+      75% { transform: translateY(-15px) translateX(-10px); }
+    }
+
+    @keyframes tailWag {
+      to { transform: rotate(25deg); }
+    }
+
+    .sensei {
+      position: fixed;
+      top: -80px;
+      right: 40px;
+      width: 180px;
+      height: 220px;
+      background: linear-gradient(180deg, #fff 0%, #ddd 100%);
+      clip-path: polygon(0 0, 100% 0, 95% 100%, 5% 100%);
+      border: 4px solid #333;
+      box-shadow: var(--shadow);
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-weight: 700;
+      color: #333;
+      animation: senseiPeek 8s ease-in-out infinite;
+    }
+    .sensei::before {
+      content: "⚔️";
+      font-size: 42px;
+      position: absolute;
+      top: 60px;
+      left: -60px;
+      transform: rotate(-25deg) scale(1.1);
+      animation: swordThrust 1.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes senseiPeek {
+      0%, 100% { top: -80px; opacity: 0.6; }
+      12%, 88% { top: 20px; opacity: 1; }
+    }
+
+    @keyframes swordThrust {
+      from { transform: rotate(-25deg) scale(1.1) translateX(0); }
+      to { transform: rotate(-15deg) scale(1.2) translateX(20px); }
+    }
+
+    header {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+
+    h1 {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+
+    .theme-toggle {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .progress-wrapper {
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .progress-label {
+      font-size: 14px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-bar-container {
+      height: 8px;
+      background: var(--border);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--accent-orange);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .module {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+    }
+
+    .module-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .module-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+
+    .status-badge {
+      font-size: 13px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #3a2545;
+      color: #aaa;
+    }
+    .status-badge.success {
+      background: #2b4a2b;
+      color: #8fff8f;
+    }
+
+    .theory {
+      font-size: 15px;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+      border-left: 3px solid var(--accent-blue);
+      padding-left: 12px;
+    }
+
+    .task-desc {
+      font-size: 15px;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+
+    .code-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    @media (max-width: 768px) {
+      .code-area { grid-template-columns: 1fr; }
+    }
+
+    textarea.code-input {
+      width: 100%;
+      min-height: 160px;
+      background: #150f1e;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      color: #00ff88;
+      resize: vertical;
+      outline: none;
+    }
+    textarea.code-input:focus {
+      border-color: var(--accent-blue);
+    }
+
+    button.run-btn {
+      background: var(--accent-blue);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      width: 100%;
+      margin-top: 8px;
+      transition: transform 0.1s, background 0.2s;
+    }
+    button.run-btn:hover {
+      background: #5fa0ff;
+      transform: translateY(-1px);
+    }
+    button.run-btn:active {
+      transform: translateY(1px);
+    }
+
+    .output-block {
+      background: #080510;
+      color: #00cc7a;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 90px;
+      white-space: pre-wrap;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 14px;
+      margin-top: 16px;
+      box-shadow: inset 0 0 10px rgba(0,204,122,0.2);
+    }
+
+    .hint {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    .ai-note {
+      margin-top: 16px;
+      padding: 12px;
+      background: rgba(255, 200, 100, 0.15);
+      border-left: 4px solid var(--accent-orange);
+      font-size: 14px;
+      color: var(--text-main);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .feedback {
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    .feedback.ok { color: #8fff8f; }
+    .feedback.err { color: #ff6b6b; }
+
+    .next-steps {
+      margin-top: 48px;
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+      z-index: 2;
+    }
+    .next-steps h3 {
+      font-size: 18px;
+      margin-bottom: 16px;
+      color: var(--accent-orange);
+    }
+    .next-steps ul { list-style: none; }
+    .next-steps li {
+      margin-bottom: 8px;
+      padding-left: 20px;
+      position: relative;
+    }
+    .next-steps li::before {
+      content: "✨";
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="decor-layer">
+    <div class="cat" style="top: 10%; left: 10%; animation-delay: -1s;"></div>
+    <div class="cat" style="top: 40%; left: 70%; animation-delay: -3s;"></div>
+    <div class="cat" style="top: 75%; left: 25%; animation-delay: -5s;"></div>
+    <div class="sensei">СЕНСЕЙ<br>УЧИ ИЛИ…<br>⚔️</div>
+  </div>
+
+  <div class="container">
+    <header>
+      <h1>🎌 Anime Python Course</h1>
+      <button class="theme-toggle" id="themeToggle">☀️ Светлая тема</button>
+    </header>
+
+    <div class="progress-wrapper">
+      <div class="progress-label">Прогресс: <span id="progressText">0% (0/5 заданий)</span></div>
+      <div class="progress-bar-container">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <!-- Модуль 1 -->
+    <section class="module" data-module="1">
+      <div class="module-header">
+        <span class="module-title">Модуль 1: Переменные и вывод</span>
+        <span class="status-badge" id="badge-1">Не выполнено</span>
+      </div>
+      <div class="theory">
+        Переменные — это «входы/выходы» для будущих интеграций: вы передаёте данные в модель и получаете результат обратно. В прототипах переменные связывают UI и логику.
+      </div>
+      <div class="task-desc">
+        Задание: создайте переменную <code>city</code> со значением «Токио» и выведите фразу «Я живу в Токио».
+      </div>
+      <div class="code-area">
+        <textarea class="code-input" id="code-1" placeholder="Напишите код здесь...">
+city = "Токио"
+print(f"Я живу в {city}")
+        </textarea>
+        <div>
+          <button class="run-btn" onclick="runModule(1)">Запустить код 🥷</button>
+          <div class="output-block" id="output-1"></div>
+          <div class="hint">Подсказка: используйте f-строку или конкатенацию.</div>
+        </div>
+      </div>
+      <div class="ai-note">
+        Как это пригодится при интеграции ИИ: переменные хранят промпт, параметры запроса и ответ модели. Это основа передачи данных между фронтендом и API.
+      </div>
+      <div class="feedback" id="feedback-1"></div>
+    </section>
+
+    <!-- Модуль 2 -->
+    <section class="module" data-module="2">
+      <div class="module-header">
+        <span class="module-title">Модуль 2: Условия (if/elif/else)</span>
+        <span class="status-badge" id="badge-2">Не выполнено</span>
+      </div>
+      <div class="theory">
+        Условия — это логика принятия решений, которая нужна в пайплайнах ИИ: например, «если уверенность модели > 0.8, показать результат, иначе запросить уточнение».
+      </div>
+      <div class="task-desc">
+        Задание: задайте переменную <code>score = 55</code>. Если score >= 50 — выведите «Допуск есть», иначе — «Нужно добрать баллы».
+      </div>
+      <div class="code-area">

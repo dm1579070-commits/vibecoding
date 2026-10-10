@@ -1,0 +1,481 @@
+<style>
+/* Аниме-стиль: мягкий градиент, пастельные тона, скругления */
+* { box-sizing: border-box; }
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #f6e6b4 0%, #ed9017 100%);
+    color: #333;
+    line-height: 1.6;
+    padding: 20px;
+}
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+header {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);
+    padding: 30px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+header::after {
+    content: "";
+    position: absolute;
+    bottom: -50px;
+    left: -50px;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+}
+h1 {
+    margin: 0;
+    font-size: 2.5em;
+    color: #8e44ad;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+    position: relative;
+    z-index: 1;
+}
+.subtitle {
+    font-size: 1.2em;
+    color: #666;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+/* Панель прогресса в стиле аниме-интерфейса */
+.progress-panel {
+    background: #fff;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    border: 2px solid #f0f0f0;
+}
+.progress-bar {
+    width: 100%;
+    height: 12px;
+    background: #eee;
+    border-radius: 6px;
+    overflow: hidden;
+    margin-top: 10px;
+}
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ff758c 0%, #ff7eb3 100%);
+    transition: width 0.5s ease;
+}
+
+/* Навигация по главам */
+.chapters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin: 20px;
+}
+.chapter-btn {
+    flex: 1;
+    min-width: 150px;
+    padding: 15px;
+    border: none;
+    border-radius: 15px;
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+    font-size: 1em;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.chapter-btn:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+.chapter-btn.active {
+    background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+    color: #fff;
+}
+
+/* Основной контент урока */
+.content {
+    padding: 0 20px 20px 20px;
+}
+.lesson {
+    display: none;
+    animation: fadeIn 0.5s;
+}
+.lesson.active { display: block; }
+
+/* Блок кода — неоновый терминал */
+.code-container {
+    background: #1e1e1e;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    position: relative;
+    overflow: hidden;
+    border: 1px solid #333;
+}
+.code-container::before {
+    content: "🐍 Python Terminal";
+    position: absolute;
+    top: 10px;
+    left: 20px;
+    font-size: 0.9em;
+    color: #00ff00;
+    font-family: monospace;
+}
+pre {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 1em;
+    line-height: 1.4;
+    color: #00ff00;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Текст урока */
+.lesson-text {
+    background: #fff;
+    border-left: 5px solid #ff758c;
+    padding: 20px;
+    border-radius: 0 15px 15px 0;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Задания */
+.task {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+    border: 2px dashed #ced4da;
+    position: relative;
+}
+.task::before {
+    content: "🎯";
+    position: absolute;
+    top: -12px;
+    left: 20px;
+    background: #f8f9fa;
+    padding: 0 10px;
+    font-size: 1.5em;
+}
+
+/* Кнопка проверки — пульсирующая */
+.check-btn {
+    background: linear-gradient(45deg, #ff416c 0%, #ff4b2b 100%);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: 0 4px 15px rgba(255, 65, 108, 0.4);
+    animation: pulse 2s infinite;
+}
+.check-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 65, 108, 0.6);
+}
+.check-btn:active { transform: scale(0.98); }
+
+/* Модальное окно с пасхалкой */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+.modal.active { display: flex; }
+.modal-content {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    max-width: 500px;
+    position: relative;
+    animation: bounceIn 0.6s;
+}
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 1.5em;
+    cursor: pointer;
+    color: #999;
+}
+
+/* Анимации */
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(255, 65, 108, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(255, 65, 108, 0); }
+}
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.05); }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* Адаптивность */
+@media (max-width: 600px) {
+    body { padding: 10px; }
+    h1 { font-size: 2em; }
+    .chapters { flex-direction: column; }
+    .chapter-btn { min-width: auto; }
+}
+</style>
+</head>
+<body>
+
+
+    
+
+Копировать
+<div class="progress-panel">
+    <div>Ваш прогресс: <span id="progressPercent">0%</span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+</div>
+
+<div class="chapters" id="chapters"></div>
+
+<div class="content" id="content"></div>
+
+</div><!-- Пасхалки -->
+
+
+
+    
+
+
+        ×
+        
+🎉 Пасхалка разблокирована!
+
+        
+
+
+    
+
+
+
+
+<script>
+// Данные курса
+const courseData = [
+    {
+        id: 0, title: "Введение", emoji: "👋",
+        text: "Котаны, всем привет! Вы в PyChan Academy. Здесь мы будем превращать кофеин в код. Наш сенсей, ленивый кот-инженер Шрёдингер, будет давать вам задания. Если что-то не работает — это не баг, это фича квантовой неопределенности.",
+        code: `# Это ваш первый комментарий
+# В Python они начинаются с решетки
+print("Мяу!") # А это вывод в консоль`,
+        task: "Измени текст внутри кавычек на 'Няшный питон на связи!' и нажми 'Проверить'.",
+        easter: "Шрёдингер говорит: если долго смотреть в консоль, консоль начнет смотреть в тебя."
+    },
+    {
+        id: 1, title: "Переменные", emoji: "📦",
+        text: "Переменная — это как коробка для печенек. Ты кладешь туда значение, пишешь на коробке имя и потом достаешь, когда проголодался по коду. Главное — не перепутать коробку с печеньками и коробку с ошибками.",
+        code: `name = "Дарья"
+age = 25
+print("Ученика зовут", name)
+print("Ей", age, "лет")`,
+        task: "Создай переменную 'cat_name' и присвой ей имя своего кота (или вымышленного). Выведи его в консоль.",
+        easter: "В Python переменные не мяукают, если на них наступить. Проверено."
+    },
+    {
+        id: 2, title: "Типы данных", emoji: "🎭",
+        text: "В Python есть числа (целые и с точкой), строки (текст), списки (очередь за дошираком) и булевы значения (True/False). Булевы — это когда ты спрашиваешь себя: 'заказать пиццу или сэкономить?'",
+        code: `is_sad = False
+pizza_slices = 8
+price = 499.99
+print(type(is_sad))
+print(type(pizza_slices))`,
+        task: "Создай переменную 'is_anime_real' со значением True. Выведи её тип.",
+        easter: "Тип 'NoneType' — это состояние души в понедельник утром."
+    },
+    {
+        id: 3, title: "Условия", emoji: "🤔",
+        text: "Оператор if — это развилка. Налево пойдешь — код выполнишь, направо пойдешь — в except упадешь. Шрёдингер любит использовать if, чтобы решать, идти ли ему на работу.",
+        code: `energy = 10
+if energy > 5:
+    print("Пишу код")
+else:
+    print("Сплю на клавиатуре")`,
+        task: "Напиши условие: если переменная 'mood' равна 'happy', выведи 'Уруру!', иначе — 'Т__Т'",
+        easter: "В жизни, как и в коде: если (зарплата > аренда): print('Счастье'). else: print('Мам, привет')."
+    },
+    {
+        id: 4, title: "Циклы", emoji: "🔄",
+        text: "Циклы нужны, чтобы повторять одно и то же. Например, 100 раз проверять, не ответил ли тот самый человек на сообщение. Или выводить числа от 1 до 10.",
+        code: `for i in range(5):
+    print("Мяу номер", i + 1)`,
+        task: "С помощью цикла for выведи в консоль фразу 'Еще один сезон аниме...' 3 раза.",
+        easter: "Бесконечный цикл while True: — официальный спонсор выгорания разработчиков."
+    },
+    {
+        id: 5, title: "Функции", emoji: "⚙️",
+        text: "Функция — это магическая печать. Один раз написал заклинание, а потом просто вызываешь его по имени. Очень удобно, когда лень писать один и тот же код дважды.",
+        code: `def greet(name):
+    return "Привет, " + name + "!"
+
+print(greet("Анимешник"))`,
+        task: "Создай функцию 'make_tea', которая возвращает строку 'Чай готов, сенпай'. Вызови её.",
+        easter: "Если функция ничего не возвращает, она возвращает None. И мою веру в человечество."
+    },
+    {
+        id: 6, title: "Списки", emoji: "🗂️",
+        text: "Список — это упорядоченная коллекция. Как полка с фигурками: у каждой есть свой индекс (место). Индексация начинается с 0, потому что программисты любят всё усложнять.",
+        code: `figurines = ["Хатсунэ Мику", "Габимару", "Гоку"]
+print(figurines[0]) # Выведет Мику`,
+        task: "Создай список 'ramen_toppings' из 3 ингредиентов. Выведи второй ингредиент.",
+        easter: "Отрицательная индексация (-1) — это способ достать последний элемент. Или последний нерв."
+    },
+    {
+        id: 7, title: "Словари", emoji: "📖",
+        text: "Словарь (dict) — это данные в формате ключ-значение. Как паспорт: ключ — 'Имя', значение — 'Дарья'. Или как меню в раменной: ключ — 'Тонкацу', значение — 600.",
+        code: `user = {
+    "name": "Дарья",
+    "level": "Jedi",
+    "waifu": "2D"
+}
+print(user['waifu'])`,
+        task: "Создай словарь 'anime' с ключами 'title' и 'episodes'. Выведи количество эпизодов.",
+        easter: "Пытаться изменить ключ в словаре — это как пытаться убедить кого-то, что Субару из Re:Zero не страдает."
+    },
+    {
+        id: 8, title: "Классы", emoji: "🏢",
+        text: "ООП (объектно-ориентированное программирование) — это когда ты создаешь чертеж (класс), а по нему строишь дом (объект). Мы создадим класс 'Senpai', чтобы он наконец-то нас заметил.",
+        code: `class Cat:
+    def __init__(self, name):
+        self.name = name
+    
+    def meow(self):
+        return self.name + ' говорит: Мяу!'
+
+my_cat = Cat("Шрёдингер")
+print(my_cat.meow())`,
+        task: "Создай класс 'AnimeGirl' с атрибутом 'name'. Создай объект с именем 'Рейна' и выведи её имя.",
+        easter: "Наследование в классах — это когда твой код настолько хорош, что его копируют. Или когда у тебя глаза отца."
+    },
+    {
+        id: 9, title: "Файлы", emoji: "💾",
+        text: "Чтение и запись файлов. Мы сохраняем наши достижения, чтобы потом хвастаться перед друзьями. Или чтобы не потерять код после внезапной перезагрузки.",
+        code: `# Запись
+with open('data.txt', 'w') as f:
+    f.write('Я прошел PyChan!')
+
+# Чтение
+with open('data.txt', 'r') as f:
+    print(f.read())`,
+        task: "Напиши код, который создаст файл 'my_log.txt' и запишет туда 'Урок 9 пройден. Я крут!'.",
+        easter: "Ошибка 'FileNotFoundError' — это когда ты ищешь смысл жизни в пятницу вечером."
+    }
+];
+
+// Рендеринг глав
+const chaptersContainer = document.getElementById('chapters');
+courseData.forEach(chapter => {
+    const btn = document.createElement('button');
+    btn.className = 'chapter-btn';
+    btn.innerHTML = `${chapter.emoji} ${chapter.title}`;
+    btn.onclick = () => loadLesson(chapter.id);
+    chaptersContainer.appendChild(btn);
+});
+
+// Логика уроков
+let currentLesson = 0;
+const content = document.getElementById('content');
+const progressFill = document.getElementById('progressFill');
+const progressPercent = document.getElementById('progressPercent');
+
+function loadLesson(id) {
+    currentLesson = id;
+    const lesson = courseData[id];
+    
+    // Обновление кнопок
+    document.querySelectorAll('.chapter-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.chapter-btn')[id].classList.add('active');
+    
+    // Рендеринг контента
+    content.innerHTML = `
+        <h2>${lesson.emoji} ${lesson.title}</h2>
+        <div class="lesson-text">${lesson.text}</div>
+        <div class="code-container">
+            <pre>${lesson.code}</pre>
+        </div>
+        <div class="task">
+            <strong>Задание:</strong> ${lesson.task}
+            <br><br>
+            <textarea id="userCode" rows="4" style="width:100%; padding:10px; border-radius:10px; border:1px solid #ddd; font-family:monospace;"></textarea>
+            <br><br>
+            <button class="check-btn" onclick="checkCode(${id})">🚀 Проверить код</button>
+        </div>
+    `;
+    updateProgress();
+}
+
+// Проверка кода (упрощенная, по ключевым словам)
+function checkCode(id) {
+    const userCode = document.getElementById('userCode').value.toLowerCase();
+    const lesson = courseData[id];
+    let passed = false;
+
+    switch(id) {
+        case 0: if (userCode.includes('няшный питон')) passed = true; break;
+        case 1: if (userCode.includes('cat_name')) passed = true; break;
+        case 2: if (userCode.includes('is_anime_real') && userCode.includes('true')) passed = true; break;
+        case 3: if (userCode.includes("mood == 'happy'") || userCode.includes('mood == "happy"')) passed = true; break;
+        case 4: if (userCode.includes('for') && userCode.includes('3')) passed = true; break;
+        case 5: if (userCode.includes('def make_tea') && userCode.includes('return')) passed = true; break;
+        case 6: if (userCode.includes('ramen_toppings') && userCode.includes('[1]')) passed = true; break;
+        case 7: if (userCode.includes('anime') && userCode.includes('episodes')) passed = true; break;
+        case 8: if (userCode.includes('class animegirl') && userCode.includes('reina')) passed = true; break;
+        case 9: if (userCode.includes('open') && userCode.includes('my_log.txt')) passed = true; break;
+        default: passed = true;
+    }
+
+    if (passed) {
+        alert('✅ Сенпей доволен! Задание выполнено. Мяу!');
+        if (lesson.easter) {
+            document.getElementById('easterText').innerText = lesson.easter;
+            document.getElementById('easterModal').classList.add('active');
+        }
+        if (id < courseData.length - 1) {
+            document.querySelectorAll('.chapter-btn')[id + 1].click();
+        }
+    } else {
+        alert('❌ Ошибка! Шрёдингер перевернулся в коробке. Попробуй еще раз.');
+    }
+}
+
+function updateProgress() {
+    const percent = Math.round((currentLesson / (courseData.length - 1)) * 100);
+    progressFill.style.width = percent + '%';
+    progressPercent.innerText = percent + '%';
+}
+
+// Закрытие пасхалки
+function closeEaster() {
+    document.getElementById('easterModal').classList.remove('active');
+}
+
+// Запуск первого урока
+loadLesson(0);
+</script>
+</body>
+</html>
